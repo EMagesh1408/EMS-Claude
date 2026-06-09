@@ -12,7 +12,7 @@ const app = express();
 
 connectDB();
 
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: "https://employeemanagementsystemclaude.netlify.app" }));
 app.use(express.json());
 
 // Routes
