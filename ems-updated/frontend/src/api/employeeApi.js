@@ -1,4 +1,4 @@
-const BASE = "/api";
+const BASE = "https://ems-claude.onrender.com/api";
 
 async function request(url, options = {}) {
   const res = await fetch(url, {
