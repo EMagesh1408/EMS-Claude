@@ -163,7 +163,7 @@ export default function Login({ onLogin }) {
               textAlign: "center",
             }}
           >
-            <h1>Admin Login</h1>
+            <h1>Employee Login</h1>
 
             <input
               type="text"
