@@ -1,156 +1,303 @@
 import React, { useState } from "react";
 import { loginUser } from "../api/employeeApi";
 
-// Only these 3 admins can log in via Admin tab — hardcoded
 const ADMIN_ACCOUNTS = {
-  "magesh":     { password: "1408", name: "Magesh",     role: "admin", department: "Admin", avatar: "MK" },
-  "dhanasekar": { password: "1234", name: "Dhanasekar", role: "admin", department: "Admin", avatar: "DK" },
-  "subasri":    { password: "1234", name: "Subasri",    role: "admin", department: "Admin", avatar: "SB" },
+  magesh: {
+    password: "1408",
+    name: "Magesh",
+    role: "admin",
+    department: "Admin",
+    avatar: "MK",
+  },
+  dhanasekar: {
+    password: "1234",
+    name: "Dhanasekar",
+    role: "admin",
+    department: "Admin",
+    avatar: "DK",
+  },
+  subasri: {
+    password: "1234",
+    name: "Subasri",
+    role: "admin",
+    department: "Admin",
+    avatar: "SB",
+  },
 };
 
 export default function Login({ onLogin }) {
-  const [tab, setTab]           = useState("admin");
+  const [isActive, setIsActive] = useState(false);
+
   const [username, setUsername] = useState("");
-  const [email, setEmail]       = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage]   = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
 
-  const handleLogin = async (e) => {
+  const [email, setEmail] = useState("");
+  const [employeePassword, setEmployeePassword] = useState("");
+
+  const [message, setMessage] = useState("");
+
+  const handleAdminLogin = (e) => {
     e.preventDefault();
-    setMessage("");
 
-    // ── Admin tab ─────────────────────────────────────────────────────────
-    if (tab === "admin") {
-      if (!username.trim() || !password.trim()) {
-        setMessage("Please enter username and password.");
-        return;
-      }
-      const key = username.trim().toLowerCase();
-      const adminUser = ADMIN_ACCOUNTS[key];
-      if (adminUser && adminUser.password === password.trim()) {
-        onLogin({ ...adminUser, email: key + "@admin.com" });
-      } else {
-        setMessage("Invalid username or password.");
-      }
-      return;
-    }
+    const key = username.trim().toLowerCase();
+    const adminUser = ADMIN_ACCOUNTS[key];
 
-    // ── Employee tab ──────────────────────────────────────────────────────
-    if (!email.trim() || !password.trim()) {
-      setMessage("Please enter email and password.");
-      return;
+    if (
+      adminUser &&
+      adminUser.password === adminPassword.trim()
+    ) {
+      onLogin({
+        ...adminUser,
+        email: key + "@admin.com",
+      });
+    } else {
+      setMessage("Invalid Admin Credentials");
     }
-    setLoading(true);
+  };
+
+  const handleEmployeeLogin = async (e) => {
+    e.preventDefault();
+
     try {
-      const data = await loginUser(email.trim(), password.trim());
-      if (data.user.role === "admin") {
-        setMessage("This is an admin account. Please use Admin Login.");
-      } else {
-        onLogin(data.user);
-      }
+      const data = await loginUser(
+        email.trim(),
+        employeePassword.trim()
+      );
+
+      onLogin(data.user);
     } catch (err) {
-      setMessage(err.message || "Invalid email or password.");
-    } finally {
-      setLoading(false);
+      setMessage("Invalid Employee Credentials");
     }
   };
-
-  const switchTab = (t) => {
-    setTab(t);
-    setMessage("");
-    setUsername(""); setEmail(""); setPassword("");
-  };
-
-  const tabStyle = (t) => ({
-    flex: 1, padding: "10px", border: "none", borderRadius: "8px",
-    fontWeight: "700", fontSize: "14px", cursor: "pointer",
-    background: tab === t ? "linear-gradient(135deg,#667eea,#764ba2)" : "#f1f5f9",
-    color: tab === t ? "#fff" : "#64748b",
-    transition: "all 0.2s",
-  });
 
   return (
-    <div style={{
-      height: "100vh", display: "flex", justifyContent: "center", alignItems: "center",
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6dd5ed 100%)",
-    }}>
-      <form onSubmit={handleLogin} style={{
-        width: "400px", background: "#fff", padding: "40px", borderRadius: "20px",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.25)", textAlign: "center",
-      }}>
-        <div style={{ fontSize: "56px", marginBottom: "8px" }}>🏢</div>
-        <h2 style={{ color: "#1e293b", marginBottom: "4px", fontSize: "26px", fontWeight: "700" }}>
-          Welcome Back
-        </h2>
-        <p style={{ color: "#94a3b8", marginBottom: "28px", fontSize: "14px" }}>
-          Employee Management System
-        </p>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background:
+          "linear-gradient(135deg,#667eea,#764ba2)",
+      }}
+    >
+      <div
+        style={{
+          position: "relative",
+          width: "900px",
+          maxWidth: "100%",
+          minHeight: "550px",
+          background: "#fff",
+          borderRadius: "30px",
+          overflow: "hidden",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.25)",
+        }}
+      >
+        {/* Employee Login */}
+        <div
+          style={{
+            position: "absolute",
+            left: isActive ? "0%" : "50%",
+            width: "50%",
+            height: "100%",
+            transition: "0.6s",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            background: "#fff",
+          }}
+        >
+          <form
+            onSubmit={handleEmployeeLogin}
+            style={{
+              width: "80%",
+              textAlign: "center",
+            }}
+          >
+            <h1>Employee Login</h1>
 
-        {/* Tab switcher */}
-        <div style={{ display: "flex", gap: "8px", marginBottom: "24px", background: "#f1f5f9", padding: "4px", borderRadius: "10px" }}>
-          <button type="button" style={tabStyle("admin")}    onClick={() => switchTab("admin")}>🔑 Admin Login</button>
-          <button type="button" style={tabStyle("employee")} onClick={() => switchTab("employee")}>👤 Employee Login</button>
+            <input
+              type="email"
+              placeholder="Employee Email"
+              value={email}
+              onChange={(e) =>
+                setEmail(e.target.value)
+              }
+              style={inputStyle}
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={employeePassword}
+              onChange={(e) =>
+                setEmployeePassword(e.target.value)
+              }
+              style={inputStyle}
+            />
+
+            <button style={buttonStyle}>
+              Sign In
+            </button>
+          </form>
         </div>
 
-        {tab === "admin" ? (
-          <>
+        {/* Admin Login */}
+        <div
+          style={{
+            position: "absolute",
+            left: isActive ? "50%" : "0%",
+            width: "50%",
+            height: "100%",
+            transition: "0.6s",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            background: "#fff",
+          }}
+        >
+          <form
+            onSubmit={handleAdminLogin}
+            style={{
+              width: "80%",
+              textAlign: "center",
+            }}
+          >
+            <h1>Admin Login</h1>
+
             <input
               type="text"
               placeholder="Username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              style={inputStyle}
-              autoComplete="off"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) =>
+                setUsername(e.target.value)
+              }
               style={inputStyle}
             />
-          </>
-        ) : (
-          <>
-            <input
-              type="email"
-              placeholder="Employee Email ID"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={inputStyle}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={inputStyle}
-            />
-          </>
-        )}
 
-        <button type="submit" disabled={loading} style={{
-          width: "100%", padding: "13px", border: "none", borderRadius: "10px",
-          background: loading ? "#94a3b8" : "linear-gradient(135deg,#667eea,#764ba2)",
-          color: "#fff", fontSize: "15px", fontWeight: "700",
-          cursor: loading ? "not-allowed" : "pointer",
-        }}>
-          {loading ? "Logging in…" : `Login as ${tab === "admin" ? "Admin" : "Employee"}`}
-        </button>
+            <input
+              type="password"
+              placeholder="Password"
+              value={adminPassword}
+              onChange={(e) =>
+                setAdminPassword(e.target.value)
+              }
+              style={inputStyle}
+            />
+
+            <button style={buttonStyle}>
+              Sign In
+            </button>
+          </form>
+        </div>
+
+        {/* Sliding Panel */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: isActive ? "0%" : "50%",
+            width: "50%",
+            height: "100%",
+            background:
+              "linear-gradient(135deg,#5c6bc0,#512da8)",
+            color: "#fff",
+            transition: "0.6s",
+            borderRadius: isActive
+              ? "0 150px 150px 0"
+              : "150px 0 0 150px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            padding: "40px",
+            boxSizing: "border-box",
+          }}
+        >
+          {isActive ? (
+            <div>
+              <h1>Welcome Admin!</h1>
+              <p>
+                Manage Employees, Payroll,
+                Attendance and Reports
+              </p>
+
+              <button
+                onClick={() =>
+                  setIsActive(false)
+                }
+                style={outlineButton}
+              >
+                Employee Login
+              </button>
+            </div>
+          ) : (
+            <div>
+              <h1>Hello Employee!</h1>
+              <p>
+                Access Salary, Attendance,
+                Profile and Performance
+              </p>
+
+              <button
+                onClick={() =>
+                  setIsActive(true)
+                }
+                style={outlineButton}
+              >
+                Admin Login
+              </button>
+            </div>
+          )}
+        </div>
 
         {message && (
-          <p style={{ marginTop: "14px", color: "#ef4444", fontWeight: "600", fontSize: "14px" }}>
-            ⚠️ {message}
-          </p>
+          <div
+            style={{
+              position: "absolute",
+              bottom: 20,
+              width: "100%",
+              textAlign: "center",
+              color: "red",
+              fontWeight: "bold",
+            }}
+          >
+            {message}
+          </div>
         )}
-      </form>
+      </div>
     </div>
   );
 }
 
 const inputStyle = {
-  width: "100%", padding: "12px 14px", marginBottom: "14px",
-  border: "2px solid #e2e8f0", borderRadius: "10px", outline: "none",
-  boxSizing: "border-box", fontSize: "14px", color: "#1e293b",
+  width: "100%",
+  padding: "12px",
+  margin: "10px 0",
+  border: "1px solid #ddd",
+  borderRadius: "8px",
+  fontSize: "14px",
+};
+
+const buttonStyle = {
+  width: "100%",
+  padding: "12px",
+  border: "none",
+  borderRadius: "8px",
+  background:
+    "linear-gradient(135deg,#667eea,#764ba2)",
+  color: "#fff",
+  fontWeight: "bold",
+  cursor: "pointer",
+  marginTop: "10px",
+};
+
+const outlineButton = {
+  padding: "12px 25px",
+  border: "1px solid white",
+  background: "transparent",
+  color: "#fff",
+  borderRadius: "8px",
+  cursor: "pointer",
+  marginTop: "15px",
 };
